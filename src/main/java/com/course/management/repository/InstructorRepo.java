@@ -1,12 +1,16 @@
 package com.course.management.repository;
 
-import java.lang.classfile.Instruction;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-@Repository
-public interface InstructorRepo extends JpaRepository<Instruction, UUID>{
+import com.course.management.entity.Instructor;
 
+@Repository
+public interface InstructorRepo extends JpaRepository<Instructor, UUID>{
+
+	Instructor findByName(String name);
+	Instructor findByEmail(String Email);
+	boolean existsByEmail(String email);
 }
