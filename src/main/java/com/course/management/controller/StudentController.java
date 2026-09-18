@@ -1,14 +1,58 @@
 package com.course.management.controller;
 
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.course.management.entity.Student;
 import com.course.management.service.StudentService;
 
+import jakarta.validation.constraints.Email;
+
 @RestController
+@RequestMapping("/students")
 public class StudentController {
 	
 	@Autowired
 	private StudentService studentService;
+	
+	@GetMapping("/student-id/{id}")
+	public Student getStudent(@PathVariable UUID id){
+		return studentService.getStudent(id);
+	}
+	@GetMapping("/student-email/{email}")
+	public Student getStudent(@PathVariable @Email String email){
+		return studentService.getStudent(email);
+	}
+	
+	@GetMapping("/student-name/{name}")
+	public List<Student> getStudentByName(@PathVariable String name){
+		return studentService.getStudentByName(name);
+	}
 
+	@PostMapping("/add")
+	public Student addStudent(@RequestBody Student student) {
+		return studentService.createStudnet(student);
+	}
+	
+	@PutMapping("/update")
+	public Student updateStudent(@RequestBody Student student) {
+		return studentService.updateStudent(student);
+	}
+	
+	@DeleteMapping("/delete/{id}")
+	public void deleteStudent(@PathVariable UUID id) {
+		studentService.deleteSudent(id);
+	}
+	
 }

@@ -12,6 +12,7 @@ import com.course.management.entity.Enrollment;
 import com.course.management.entity.EnrollmentStatus;
 import com.course.management.entity.Student;
 import com.course.management.repository.EnrollmentRepo;
+import com.course.management.repository.StudentRepo;
 
 @Service
 public class EnrollmentService {
@@ -19,7 +20,7 @@ public class EnrollmentService {
 	@Autowired
 	private EnrollmentRepo enrollmentRepo;
 	@Autowired
-	private StudentService studentService;
+	private StudentRepo studentRepo;  //repo to avoid circular references (no need student business logic in this case)
 	@Autowired
 	private CourseService courseService;
 	
@@ -29,14 +30,20 @@ public class EnrollmentService {
 	public Enrollment enrollStudentIntoCourse(UUID student_id,UUID course_id) {
 
 		//is this student enrolled to this course before?----------------------------------------------------------------------
-		
-		
-		
+		List<Enrollment> stud_enrollments = enrollmentRepo.findByStudentId(student_id);
+		Boolean isEnrolled = false;
+		for (Enrollment en : stud_enrollments) {
+			if(en.getCourse().getId().equals(course_id)) {
+				isEnrolled=true;
+				break;
+			}
+		}
+		if(isEnrolled) {throw new IllegalArgumentException("You already have Enrollment recorde to this course");}
 		
 		Enrollment enrollment = new Enrollment();
 		enrollment.setEnrollmentStatus(EnrollmentStatus.PENDING);
 		//Student must exist.
-		Student student = studentService.getStudent(student_id);
+		Student student = studentRepo.findById(student_id).orElseThrow(() -> new RuntimeException("Student with id:"+student_id+" not found"));
 		enrollment.setStudent(student);
 		
 		//Course must exist.
@@ -47,7 +54,9 @@ public class EnrollmentService {
 		if(course.getEnrolledCount() == course.getCapacity()) {
 			enrollment.setEnrollmentStatus(EnrollmentStatus.FAILED);
 		}
-		enrollment.setEnrollmentStatus(EnrollmentStatus.ENROLLED);
+		if(enrollment.getEnrollmentStatus().equals(EnrollmentStatus.PENDING)) {
+			enrollment.setEnrollmentStatus(EnrollmentStatus.ENROLLED);
+		}
 		
 		//Update the course's enrollment count.
 		course.setEnrolledCount(course.getEnrolledCount()+1);
@@ -66,16 +75,17 @@ public class EnrollmentService {
 	}
 //	Get course's enrollments.
 	public List<Enrollment> getCourseEnrollments(UUID course_id){
-		return enrollmentRepo.findByStudentId(course_id);
+		return enrollmentRepo.findByCourseId(course_id);
 	}
 	//Drop a course without delete the enrollment
-	public void dropCourse(Long enrollment_id,UUID student_id) {
+	public Enrollment dropCourse(Long enrollment_id) {
 		//The enrollment must exist.
 		Enrollment enrollment = enrollmentRepo.findById(enrollment_id).orElseThrow(() -> new RuntimeException("Enrollment with id:"+enrollment_id+" not found to drop"));
 		//The enrollment must belong to the current student.
-		if(enrollment.getStudent().getId() != student_id) {
-			throw new IllegalArgumentException("you cannot drop another student's enrollment");
-		}
+//		if( ! enrollment.getStudent().getId().equals(student_id)) {
+//			throw new IllegalArgumentException("you cannot drop another student's enrollment");
+//		}
+		
 		//The enrollment must currently be ENROLLED.
 		if(enrollment.getEnrollmentStatus() != EnrollmentStatus.ENROLLED) {
 			throw new IllegalArgumentException("you are not Enrolled to drop");
@@ -87,6 +97,16 @@ public class EnrollmentService {
 		courseService.updateCourse(course);
 		//save update
 		enrollmentRepo.save(enrollment);
+		return enrollment;
+	}
+	
+	//must be not enrolled to delete///////////////////////////////////////////////////////////////////////
+	public void deleteEnrollment(Long id) {
+		Enrollment enrollment = getEnrollment(id);
+		if(enrollment.getEnrollmentStatus() == EnrollmentStatus.ENROLLED) {
+			enrollment = dropCourse(id);
+		}
+		enrollmentRepo.delete(enrollment);
 	}
 	//Change enrollment status.
 	

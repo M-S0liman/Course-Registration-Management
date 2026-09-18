@@ -3,10 +3,13 @@ package com.course.management.service;
 import java.util.List;
 import java.util.UUID;
 
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.course.management.entity.Enrollment;
 import com.course.management.entity.Student;
 import com.course.management.repository.StudentRepo;
 
@@ -15,6 +18,8 @@ public class StudentService {
 	
 	@Autowired
 	private StudentRepo studentRepo;
+	@Autowired
+	private EnrollmentService enrollmentService;
 	
 	//CRUD ---------------------------
 	public Student getStudent(UUID id) {
@@ -55,8 +60,13 @@ public class StudentService {
 		return studentRepo.save(old);
 	}
 	
+	
 	public void deleteSudent(UUID id) {
 		Student s = studentRepo.findById(id).orElseThrow(() -> new RuntimeException("Student with id:"+id+" not found"));
+		List<Enrollment> stud_enrollments = enrollmentService.getStudentEnrollments(id);
+		for (Enrollment en : stud_enrollments) {
+			enrollmentService.deleteEnrollment(en.getId());
+		}
 		studentRepo.delete(s);
 	}
 	

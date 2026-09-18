@@ -27,7 +27,7 @@ public class InstructorService {
 			return instructorRepo.findByEmail(email);
 		}
 		
-		public Instructor getInstructorByName(String name) {
+		public List<Instructor> getInstructorByName(String name) {
 			return instructorRepo.findByName(name);
 		}
 		
