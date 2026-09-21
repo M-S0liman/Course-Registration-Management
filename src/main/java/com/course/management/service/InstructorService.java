@@ -8,7 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.course.management.dto.request.InstructorRequest;
+import com.course.management.dto.response.InstructorResponse;
 import com.course.management.entity.Instructor;
+import com.course.management.mapper.InstructorMapper;
 import com.course.management.repository.InstructorRepo;
 
 @Service
@@ -16,45 +19,62 @@ public class InstructorService {
 
 	@Autowired
 	private InstructorRepo instructorRepo;
+	@Autowired
+	private InstructorMapper instructorMapper;
 	
 	//CRUD ---------------------------
-		public Instructor getInstructor(UUID id) {
-			return instructorRepo.findById(id).orElseThrow(() -> new RuntimeException("Instructor with id:"+id+" not found"));
+		public InstructorResponse getInstructor(UUID id) {
+			Instructor i = instructorRepo.findById(id).orElseThrow(() -> new RuntimeException("Instructor with id:"+id+" not found"));
+			return instructorMapper.toResponse(i);
 		}
 		
-		public Instructor getInstructor(String email) {
-			
-			return instructorRepo.findByEmail(email);
+		public InstructorResponse getInstructor(String email) {
+			Instructor i = instructorRepo.findByEmail(email);
+			return instructorMapper.toResponse(i); 
 		}
 		
-		public List<Instructor> getInstructorByName(String name) {
-			return instructorRepo.findByName(name);
+		public List<InstructorResponse> getInstructorByName(String name) {
+			return instructorRepo.findByName(name)
+					.stream()
+					.map(instructorMapper::toResponse)
+					.toList();
 		}
 		
-		public List<Instructor> getAllInstructors(){
-			return instructorRepo.findAll();
+		public List<InstructorResponse> getAllInstructors(){
+			return instructorRepo.findAll()
+					.stream()
+					.map(instructorMapper::toResponse)
+					.toList();
 		}
 		
-		public Instructor createInstructor(Instructor instructor) {
-			if(instructorRepo.existsByEmail(instructor.getEmail())){
+		public InstructorResponse createInstructor(InstructorRequest instructorRequest) {
+			if(instructorRepo.existsByEmail(instructorRequest.email())){
 				throw new IllegalArgumentException("Email already exist");
 			}
-			return instructorRepo.save(instructor);
+			
+			Instructor i = instructorMapper.toEntity(instructorRequest);
+			
+			instructorRepo.save(i);
+			
+			return instructorMapper.toResponse(i);
 		}
 		
 		@Transactional
-		public Instructor updateInstructor(Instructor instructor) {
-			Instructor old = instructorRepo.findById(instructor.getId()).orElseThrow(() -> new RuntimeException("instructor not found"));
+		public InstructorResponse updateInstructor(UUID id, InstructorRequest instructorRequest) {
+			Instructor old = instructorRepo.findById(id).orElseThrow(() -> new RuntimeException("instructor not found"));
 			
 			//check email 
-			if(instructor.getEmail()!= old.getEmail() && instructorRepo.existsByEmail(instructor.getEmail())) {
+			if(instructorRequest.email().equals(old.getEmail()) && instructorRepo.existsByEmail(instructorRequest.email())) {
 				throw new IllegalArgumentException("Email already exist");
 			}
-			old.setName(instructor.getName());
-			old.setEmail(instructor.getEmail());
-			old.setPhoneNum(instructor.getPhoneNum());
 			
-			return instructorRepo.save(instructor);
+			old.setName(instructorRequest.name());
+			old.setEmail(instructorRequest.email());
+			old.setPhoneNum(instructorRequest.phoneNum());
+			
+			Instructor saved = instructorRepo.save(old);
+			
+			return instructorMapper.toResponse(saved);
 		}
 		
 		public void deleteInstructor(UUID id) {

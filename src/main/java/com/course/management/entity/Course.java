@@ -11,6 +11,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 public class Course {
@@ -18,14 +20,16 @@ public class Course {
 	@Id
 	@UuidGenerator
 	private UUID id;
+	@NotBlank
 	private String name;
+	@NotNull
 	private Integer capacity;
 	private Integer enrolledCount=0;
 	@ManyToOne
 	@JoinColumn(name = "instructor_id")
 	private Instructor instructor;
 	@OneToMany(mappedBy = "course",cascade = CascadeType.REMOVE)
-	private List<Enrollment>enrollment;
+	private List<Enrollment>enrollments;
 	
 	
 	public Course() {super();}

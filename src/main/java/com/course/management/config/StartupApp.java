@@ -4,6 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import com.course.management.dto.request.CourseRequest;
+import com.course.management.dto.request.EnrollmentRequest;
+import com.course.management.dto.request.InstructorRequest;
+import com.course.management.dto.request.StudentRequest;
+import com.course.management.dto.response.CourseResponse;
+import com.course.management.dto.response.InstructorResponse;
+import com.course.management.dto.response.StudentResponse;
 import com.course.management.entity.Course;
 import com.course.management.entity.Enrollment;
 import com.course.management.entity.EnrollmentStatus;
@@ -29,50 +36,31 @@ public class StartupApp implements CommandLineRunner{
 	@Override
 	public void run(String... args) throws Exception {
 		// Student
-		Student s1 = new Student();
-		s1.setName("mahmoud");
-		s1.setEmail("m@c.com");
-		s1.setPhoneNum("111111");
+		StudentRequest sr1 = new StudentRequest("mahmoud", "m@c.com", "111111");
+		StudentRequest sr2 = new StudentRequest("soliman", "s@c.com", "222222");
 		
-		Student s2 = new Student();
-		s2.setName("soliman");
-		s2.setEmail("s@c.com");
-		s2.setPhoneNum("222222");
-		
-		studentService.createStudnet(s1);
-		studentService.createStudnet(s2);
+		StudentResponse st1 = studentService.createStudnet(sr1);
+		StudentResponse st2 = studentService.createStudnet(sr2);
 		
 		//Instructor
-		Instructor i1 = new Instructor();
-		i1.setName("ahmed");
-		i1.setEmail("a@c.com");
-		i1.setPhoneNum("111111");
+		InstructorRequest i1 = new InstructorRequest("ahmed","a@c.com","111111");
+		InstructorRequest i2 = new InstructorRequest("omar","o@c.com","222222");
 		
-		Instructor i2 = new Instructor();
-		i2.setName("omar");
-		i2.setEmail("o@c.com");
-		i2.setPhoneNum("222222");
-		
-		instructorService.createInstructor(i1);
-		instructorService.createInstructor(i2);
+		InstructorResponse ires1 = instructorService.createInstructor(i1);
+		InstructorResponse ires2 = instructorService.createInstructor(i2);
 		
 		//Course
-		Course c1 = new Course();
-		c1.setInstructor(i1);
-		c1.setName("java");
-		c1.setCapacity(100);
+		CourseRequest c1 = new CourseRequest("java",100,0,ires1.id());
+		CourseRequest c2 = new CourseRequest("os",100,0,ires2.id());
 		
-		Course c2 = new Course();
-		c2.setInstructor(i2);
-		c2.setName("os");
-		c2.setCapacity(100);
-		
-		courseService.createCourse(c1);
-		courseService.createCourse(c2);
+		CourseResponse cr1 = courseService.createCourse(c1);
+		CourseResponse cr2 = courseService.createCourse(c2);
 		
 		//Enrollment
-		enrollmentService.enrollStudentIntoCourse(s1.getId(), c1.getId());
-		enrollmentService.enrollStudentIntoCourse(s2.getId(), c2.getId());
+		EnrollmentRequest en1 = new EnrollmentRequest(st1.id(), cr1.id());
+		EnrollmentRequest en2 = new EnrollmentRequest(st2.id(), cr2.id());
+		enrollmentService.enrollStudentIntoCourse(en1);
+		enrollmentService.enrollStudentIntoCourse(en2);
 	}
 
 	
