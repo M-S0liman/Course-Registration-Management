@@ -9,8 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.course.management.dto.request.StudentRequest;
+import com.course.management.dto.response.EnrollmentResponse;
+import com.course.management.dto.response.StudentResponse;
 import com.course.management.entity.Enrollment;
 import com.course.management.entity.Student;
+import com.course.management.mapper.StudentMapper;
 import com.course.management.repository.StudentRepo;
 
 @Service
@@ -20,52 +24,69 @@ public class StudentService {
 	private StudentRepo studentRepo;
 	@Autowired
 	private EnrollmentService enrollmentService;
+	@Autowired
+	private StudentMapper studentMapper;
 	
 	//CRUD ---------------------------
-	public Student getStudent(UUID id) {
-		return studentRepo.findById(id).orElseThrow(() -> new RuntimeException("Student with id:"+id+" not found"));
+	public StudentResponse getStudent(UUID id) {
+		Student s = studentRepo.findById(id).orElseThrow(() -> new RuntimeException("Student with id:"+id+" not found"));
+		return studentMapper.toResponse(s);
 	}
 	
-	public Student getStudent(String email) {
-		return studentRepo.findByEmail(email);
+	public StudentResponse getStudent(String email) {
+		Student s = studentRepo.findByEmail(email);
+		return studentMapper.toResponse(s);
 	}
 	
-	public List<Student> getStudentByName(String name) {
-		return studentRepo.findByName(name);
+	public List<StudentResponse> getStudentByName(String name) {
+		return studentRepo.findByName(name)
+				.stream()
+				.map(studentMapper::toResponse)
+				.toList();
 	}
 	
-	public List<Student> getAllStudent(){
-		return studentRepo.findAll();
+	public List<StudentResponse> getAllStudent(){
+		return studentRepo.findAll()
+				.stream()
+				.map(studentMapper::toResponse)
+				.toList();
 	}
 	
-	public Student createStudnet(Student student) {
-		if(studentRepo.existsByEmail(student.getEmail())){
+	public StudentResponse createStudnet(StudentRequest studentRequest) {
+		if(studentRepo.existsByEmail(studentRequest.email())){
 			throw new IllegalArgumentException("Email already exist");
 		}
-		return studentRepo.save(student);
+
+		Student s = studentMapper.toEntity(studentRequest);
+		
+		studentRepo.save(s);
+		
+		return studentMapper.toResponse(s);
 	}
 	@Transactional
-	public Student updateStudent(Student student) {
+	public StudentResponse updateStudent(UUID id, StudentRequest studentRequest) {
 		
-		Student old = studentRepo.findById(student.getId()).orElseThrow(() -> new RuntimeException("Student not found"));
+		Student old = studentRepo.findById(id).orElseThrow(() -> new RuntimeException("Student not found"));
 		
 		//check email 
-		if(student.getEmail()!= old.getEmail() && studentRepo.existsByEmail(student.getEmail())) {
+		if(! (studentRequest.email().equals(old.getEmail())) && studentRepo.existsByEmail(studentRequest.email())) {
 			throw new IllegalArgumentException("Email already exist");
 		}
-		old.setName(student.getName());
-		old.setEmail(student.getEmail());
-		old.setPhoneNum(student.getPhoneNum());
+		old.setName(studentRequest.name());
+		old.setEmail(studentRequest.email());
+		old.setPhoneNum(studentRequest.phoneNum());
+	
+		Student saved = studentRepo.save(old);
 		
-		return studentRepo.save(old);
+		return studentMapper.toResponse(saved);
 	}
 	
 	
 	public void deleteSudent(UUID id) {
 		Student s = studentRepo.findById(id).orElseThrow(() -> new RuntimeException("Student with id:"+id+" not found"));
-		List<Enrollment> stud_enrollments = enrollmentService.getStudentEnrollments(id);
-		for (Enrollment en : stud_enrollments) {
-			enrollmentService.deleteEnrollment(en.getId());
+		List<EnrollmentResponse> stud_enrollments = enrollmentService.getStudentEnrollments(id);
+		for (EnrollmentResponse en : stud_enrollments) {
+			enrollmentService.deleteEnrollment(en.enrollment_id());
 		}
 		studentRepo.delete(s);
 	}

@@ -7,10 +7,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.course.management.dto.request.CourseRequest;
+import com.course.management.dto.request.EnrollmentRequest;
+import com.course.management.dto.response.EnrollmentResponse;
 import com.course.management.entity.Course;
 import com.course.management.entity.Enrollment;
 import com.course.management.entity.EnrollmentStatus;
 import com.course.management.entity.Student;
+import com.course.management.mapper.CourseMapper;
+import com.course.management.mapper.EnrollmentMapper;
 import com.course.management.repository.EnrollmentRepo;
 import com.course.management.repository.StudentRepo;
 
@@ -23,17 +28,21 @@ public class EnrollmentService {
 	private StudentRepo studentRepo;  //repo to avoid circular references (no need student business logic in this case)
 	@Autowired
 	private CourseService courseService;
+	@Autowired
+	private CourseMapper courseMapper;
+	@Autowired
+	private EnrollmentMapper enrollmentMapper;
 	
 //	Enrollment operations:
 //	Enroll student in course.
 	@Transactional
-	public Enrollment enrollStudentIntoCourse(UUID student_id,UUID course_id) {
+	public EnrollmentResponse enrollStudentIntoCourse(EnrollmentRequest enrollmentRequest) {
 
 		//is this student enrolled to this course before?----------------------------------------------------------------------
-		List<Enrollment> stud_enrollments = enrollmentRepo.findByStudentId(student_id);
+		List<Enrollment> stud_enrollments = enrollmentRepo.findByStudentId(enrollmentRequest.student_id());
 		Boolean isEnrolled = false;
 		for (Enrollment en : stud_enrollments) {
-			if(en.getCourse().getId().equals(course_id)) {
+			if(en.getCourse().getId().equals(enrollmentRequest.course_id()) && en.getEnrollmentStatus() == EnrollmentStatus.ENROLLED) {
 				isEnrolled=true;
 				break;
 			}
@@ -43,11 +52,11 @@ public class EnrollmentService {
 		Enrollment enrollment = new Enrollment();
 		enrollment.setEnrollmentStatus(EnrollmentStatus.PENDING);
 		//Student must exist.
-		Student student = studentRepo.findById(student_id).orElseThrow(() -> new RuntimeException("Student with id:"+student_id+" not found"));
+		Student student = studentRepo.findById(enrollmentRequest.student_id()).orElseThrow(() -> new RuntimeException("Student with id:"+enrollmentRequest.student_id()+" not found"));
 		enrollment.setStudent(student);
 		
 		//Course must exist.
-		Course course = courseService.getCourse(course_id);
+		Course course = courseMapper.toEntity(courseService.getCourse(enrollmentRequest.course_id()));
 		enrollment.setCourse(course);
 		
 		//Course must have available seats.
@@ -60,25 +69,34 @@ public class EnrollmentService {
 		
 		//Update the course's enrollment count.
 		course.setEnrolledCount(course.getEnrolledCount()+1);
-		courseService.updateCourse(course);
+		//mapping
+		CourseRequest cr = courseMapper.toRequest(course);
+		courseService.updateCourse(enrollmentRequest.course_id(),cr);
 		
-		//return
-		return enrollmentRepo.save(enrollment);
+		Enrollment saved = enrollmentRepo.save(enrollment);
+		return enrollmentMapper.toResponse(saved);
 	}
 //	Get enrollment by ID.
-	public Enrollment getEnrollment(Long id) {
-		return enrollmentRepo.findById(id).orElseThrow(() -> new RuntimeException("Enrollment with id:"+id+" not found"));
+	public EnrollmentResponse getEnrollment(Long id) {
+		Enrollment e = enrollmentRepo.findById(id).orElseThrow(() -> new RuntimeException("Enrollment with id:"+id+" not found"));
+		return enrollmentMapper.toResponse(e);
 	}
 //	Get student's enrollments.
-	public List<Enrollment> getStudentEnrollments(UUID student_id){
-		return enrollmentRepo.findByStudentId(student_id);
+	public List<EnrollmentResponse> getStudentEnrollments(UUID student_id){
+		return enrollmentRepo.findByStudentId(student_id)
+				.stream()
+				.map(enrollmentMapper::toResponse)
+				.toList();
 	}
 //	Get course's enrollments.
-	public List<Enrollment> getCourseEnrollments(UUID course_id){
-		return enrollmentRepo.findByCourseId(course_id);
+	public List<EnrollmentResponse> getCourseEnrollments(UUID course_id){
+		return enrollmentRepo.findByCourseId(course_id)
+				.stream()
+				.map(enrollmentMapper::toResponse)
+				.toList();
 	}
 	//Drop a course without delete the enrollment
-	public Enrollment dropCourse(Long enrollment_id) {
+	public EnrollmentResponse dropCourse(Long enrollment_id) {
 		//The enrollment must exist.
 		Enrollment enrollment = enrollmentRepo.findById(enrollment_id).orElseThrow(() -> new RuntimeException("Enrollment with id:"+enrollment_id+" not found to drop"));
 		//The enrollment must belong to the current student.
@@ -94,19 +112,21 @@ public class EnrollmentService {
 		//After dropping, the course gets its seat back.
 		Course course = enrollment.getCourse();
 		course.setEnrolledCount(course.getEnrolledCount() - 1);
-		courseService.updateCourse(course);
+		//mapping
+		CourseRequest cr = courseMapper.toRequest(course);
+		courseService.updateCourse(course.getId(),cr);
 		//save update
-		enrollmentRepo.save(enrollment);
-		return enrollment;
+		Enrollment saved = enrollmentRepo.save(enrollment);
+		return enrollmentMapper.toResponse(saved);
 	}
 	
-	//must be not enrolled to delete///////////////////////////////////////////////////////////////////////
+	//if enrolled drop then delete
 	public void deleteEnrollment(Long id) {
-		Enrollment enrollment = getEnrollment(id);
+		Enrollment enrollment = enrollmentRepo.findById(id).orElseThrow(() -> new RuntimeException("Enrollment with id:"+id+" not found to delete"));
 		if(enrollment.getEnrollmentStatus() == EnrollmentStatus.ENROLLED) {
-			enrollment = dropCourse(id);
+			dropCourse(id);
 		}
-		enrollmentRepo.delete(enrollment);
+		enrollmentRepo.deleteById(id);
 	}
 	//Change enrollment status.
 	
