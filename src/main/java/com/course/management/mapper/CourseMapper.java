@@ -15,6 +15,7 @@ public class CourseMapper {
 		c.setName(req.name());
 		c.setCapacity(req.capacity());
 		c.setEnrolledCount(req.enrolled_count());
+		if(c.getEnrolledCount() == null)c.setEnrolledCount(0);
 		return c;
 	}
 	
@@ -29,6 +30,7 @@ public class CourseMapper {
 		c.setCapacity(res.capacity());
 		c.setEnrolledCount(res.enrolled_count());
 		c.setInstructor(ins);
+		if(c.getEnrolledCount() == null)c.setEnrolledCount(0);
 		return c;
 	}
 	

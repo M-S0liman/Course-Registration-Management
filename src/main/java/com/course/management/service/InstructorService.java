@@ -2,7 +2,7 @@ package com.course.management.service;
 
 
 import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.course.management.dto.request.InstructorRequest;
 import com.course.management.dto.response.InstructorResponse;
 import com.course.management.entity.Instructor;
+import com.course.management.exception.RecordNotFoundException;
 import com.course.management.mapper.InstructorMapper;
 import com.course.management.repository.InstructorRepo;
 
@@ -23,14 +24,20 @@ public class InstructorService {
 	private InstructorMapper instructorMapper;
 	
 	//CRUD ---------------------------
-		public InstructorResponse getInstructor(UUID id) {
-			Instructor i = instructorRepo.findById(id).orElseThrow(() -> new RuntimeException("Instructor with id:"+id+" not found"));
-			return instructorMapper.toResponse(i);
+		public InstructorResponse getInstructor(Long id) {
+			Optional<Instructor> i = instructorRepo.findById(id);
+			if(!i.isPresent()) {
+				throw new RecordNotFoundException("Instructor with id:"+id+" Not Found");
+			}
+			return instructorMapper.toResponse(i.get());
 		}
 		
 		public InstructorResponse getInstructor(String email) {
-			Instructor i = instructorRepo.findByEmail(email);
-			return instructorMapper.toResponse(i); 
+			Optional<Instructor> i = instructorRepo.findByEmail(email);
+			if(!i.isPresent()) {
+				throw new RecordNotFoundException("Instructor with email:"+email+" Not Found");
+			}
+			return instructorMapper.toResponse(i.get()); 
 		}
 		
 		public List<InstructorResponse> getInstructorByName(String name) {
@@ -60,26 +67,34 @@ public class InstructorService {
 		}
 		
 		@Transactional
-		public InstructorResponse updateInstructor(UUID id, InstructorRequest instructorRequest) {
-			Instructor old = instructorRepo.findById(id).orElseThrow(() -> new RuntimeException("instructor not found"));
+		public InstructorResponse updateInstructor(Long id, InstructorRequest instructorRequest) {
+			Optional<Instructor> old = instructorRepo.findById(id);
+			if(!old.isPresent()) {
+				throw new RecordNotFoundException("Instructor with id:"+id+" Not Found");
+			}
 			
 			//check email 
-			if(instructorRequest.email().equals(old.getEmail()) && instructorRepo.existsByEmail(instructorRequest.email())) {
+			if(!instructorRequest.email().equals(old.get().getEmail()) && instructorRepo.existsByEmail(instructorRequest.email())) {
 				throw new IllegalArgumentException("Email already exist");
 			}
 			
-			old.setName(instructorRequest.name());
-			old.setEmail(instructorRequest.email());
-			old.setPhoneNum(instructorRequest.phoneNum());
+			old.get().setName(instructorRequest.name());
+			old.get().setEmail(instructorRequest.email());
+			if(instructorRequest.phoneNum() != null) {
+				old.get().setPhoneNum(instructorRequest.phoneNum());
+			}
 			
-			Instructor saved = instructorRepo.save(old);
+			Instructor saved = instructorRepo.save(old.get());
 			
 			return instructorMapper.toResponse(saved);
 		}
 		
-		public void deleteInstructor(UUID id) {
-			Instructor s = instructorRepo.findById(id).orElseThrow(() -> new RuntimeException("Student with id:"+id+" not found"));
-			instructorRepo.delete(s);
+		public void deleteInstructor(Long id) {
+			Optional<Instructor> i = instructorRepo.findById(id);
+			if(!i.isPresent()) {
+				throw new RecordNotFoundException("Instructor with id:"+id+" Not Found");
+			}
+			instructorRepo.delete(i.get());
 		}
 		//------------------------------------CRUD
 	
