@@ -1,9 +1,10 @@
 package com.course.management.controller;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,26 +26,26 @@ public class EnrollmentController {
 	private EnrollmentService enrollmentService;
 	
 	@GetMapping("/enrollment/{id}")
-	public EnrollmentResponse getEnrollment(@PathVariable Long id) {
-		return enrollmentService.getEnrollment(id);
+	public ResponseEntity<EnrollmentResponse> getEnrollment(@PathVariable Long id) {
+		return ResponseEntity.status(HttpStatus.OK).body(enrollmentService.getEnrollment(id));
 	}
 	@GetMapping("/stud/{student_id}")
-	public List<EnrollmentResponse> getStudentEnrollments(@PathVariable UUID student_id){
-		return enrollmentService.getStudentEnrollments(student_id);
+	public ResponseEntity<List<EnrollmentResponse>> getStudentEnrollments(@PathVariable Long student_id){
+		return ResponseEntity.status(HttpStatus.OK).body(enrollmentService.getStudentEnrollments(student_id));
 	}
 	@GetMapping("/course/{course_id}")
-	public List<EnrollmentResponse> getCourseEnrollments(@PathVariable UUID course_id){
-		return enrollmentService.getCourseEnrollments(course_id);
+	public ResponseEntity<List<EnrollmentResponse>> getCourseEnrollments(@PathVariable Long course_id){
+		return ResponseEntity.status(HttpStatus.OK).body(enrollmentService.getCourseEnrollments(course_id));
 	}
 	
 	@PostMapping("/add")
-	public EnrollmentResponse createEnrollment(@RequestBody EnrollmentRequest enrollmentRequest) {
-		return enrollmentService.enrollStudentIntoCourse(enrollmentRequest);
+	public ResponseEntity<EnrollmentResponse> createEnrollment(@RequestBody EnrollmentRequest enrollmentRequest) {
+		return ResponseEntity.status(HttpStatus.CREATED).body(enrollmentService.enrollStudentIntoCourse(enrollmentRequest));
 	}
 	
 	@PutMapping("/drop/{enroll_id}")
-	public EnrollmentResponse dropCourse(@PathVariable Long enroll_id) {
-		return enrollmentService.dropCourse(enroll_id);
+	public ResponseEntity<EnrollmentResponse> dropCourse(@PathVariable Long enroll_id) {
+		return ResponseEntity.status(HttpStatus.OK).body(enrollmentService.dropCourse(enroll_id));
 	}
 	
 	@DeleteMapping("/delete/{id}")

@@ -1,7 +1,6 @@
 package com.course.management.controller;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,13 +12,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.course.management.dto.request.CourseRequest;
 import com.course.management.dto.response.CourseResponse;
-import com.course.management.entity.Course;
-import com.course.management.mapper.CourseMapper;
 import com.course.management.service.CourseService;
 
 import jakarta.validation.Valid;
@@ -33,19 +29,19 @@ public class CourseController {
 	private CourseService courseService;
 	
 	
-	@GetMapping("/course/{id}")
-	public CourseResponse getCourse(@PathVariable UUID id){
-		return courseService.getCourse(id);
+	@GetMapping("/course-id/{id}")
+	public ResponseEntity<CourseResponse> getCourse(@PathVariable Long id){
+		return ResponseEntity.status(HttpStatus.OK).body(courseService.getCourse(id));
 	}
 	
-	@GetMapping("/course/{name}")
-	public List<CourseResponse> getCourseByName(@PathVariable String name){
-		return courseService.getCourse(name);
+	@GetMapping("/course-name/{name}")
+	public ResponseEntity<List<CourseResponse>> getCourseByName(@PathVariable String name){
+		return ResponseEntity.status(HttpStatus.OK).body(courseService.getCourse(name));
 	}
 	
 	@GetMapping
-	public List<CourseResponse> getAllCourses(){
-		return courseService.getAllCourse();
+	public ResponseEntity<List<CourseResponse>> getAllCourses(){
+		return ResponseEntity.status(HttpStatus.OK).body(courseService.getAllCourse());
 	}
 
 	@PostMapping("/add")
@@ -54,12 +50,12 @@ public class CourseController {
 	}
 	
 	@PutMapping("/update/{id}")
-	public ResponseEntity<CourseResponse> updateCourse(@PathVariable UUID id, @RequestBody @Valid CourseRequest courseRequest) {
+	public ResponseEntity<CourseResponse> updateCourse(@PathVariable Long id, @RequestBody @Valid CourseRequest courseRequest) {
 		return ResponseEntity.status(HttpStatus.OK).body(courseService.updateCourse(id,courseRequest));
 	}
 	
 	@DeleteMapping("/delete/{id}")
-	public void deleteCourse(@PathVariable UUID id) {
+	public void deleteCourse(@PathVariable Long id) {
 		courseService.deleteCourse(id);
 	}
 	

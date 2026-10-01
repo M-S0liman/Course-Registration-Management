@@ -9,11 +9,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 @Entity
-public class Enrollment {
+public class Enrollment extends BaseEntity{
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
 	private EnrollmentStatus enrollmentStatus;
 	@ManyToOne
 	@JoinColumn(name = "student_id")
@@ -24,18 +21,12 @@ public class Enrollment {
 	
 	public Enrollment() {super();}
 	public Enrollment(Long id, Student student, Course course) {
-		super();
-		this.id = id;
+		super(id);
 		this.student = student;
 		this.course = course;
 	}
 	
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
-	}
+	
 	public Student getStudent() {
 		return student;
 	}

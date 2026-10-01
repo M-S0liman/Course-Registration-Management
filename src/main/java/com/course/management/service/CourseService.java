@@ -1,7 +1,7 @@
 package com.course.management.service;
 
 import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,9 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.course.management.dto.request.CourseRequest;
 import com.course.management.dto.response.CourseResponse;
-import com.course.management.dto.response.InstructorResponse;
 import com.course.management.entity.Course;
 import com.course.management.entity.Instructor;
+import com.course.management.exception.RecordNotFoundException;
 import com.course.management.mapper.CourseMapper;
 import com.course.management.mapper.InstructorMapper;
 import com.course.management.repository.CourseRepo;
@@ -47,9 +47,12 @@ public class CourseService {
 		return courseMapper.toResponse(c);
 	}
 	
-	public CourseResponse getCourse(UUID id) {
-		Course c = courseRepo.findById(id).orElseThrow(() -> new RuntimeException("Course with id:"+id+" not found"));
-		return courseMapper.toResponse(c);
+	public CourseResponse getCourse(Long id) {
+		Optional<Course> c = courseRepo.findById(id);
+		if(!c.isPresent()) {
+			throw new RecordNotFoundException("Course with id:"+id+" Not Found");
+		}
+		return courseMapper.toResponse(c.get());
 	}
 	
 	public List<CourseResponse> getCourse(String name) {
@@ -67,36 +70,42 @@ public class CourseService {
 	}
 	
 	@Transactional
-	public CourseResponse updateCourse(UUID id, CourseRequest courseRequest) {
+	public CourseResponse updateCourse(Long id, CourseRequest courseRequest) {
 		//check course exist
-		Course old = courseRepo.findById(id).orElseThrow(() -> new RuntimeException("Course not found to update"));
+		Optional<Course> old = courseRepo.findById(id);
+		if(!old.isPresent()) {
+			throw new RecordNotFoundException("Course with id:"+id+" Not Found");
+		}
 		//check capacity
 		Integer cap = courseRequest.capacity();
-		if(cap <= 0 || old.getEnrolledCount() > cap) {
-			throw new IllegalArgumentException("capacity must be more than or equal student already enrolled");
+		if(cap <= 0 || old.get().getEnrolledCount() > cap) {
+			throw new IllegalArgumentException("capacity must be more >= "+old.get().getEnrolledCount()+" (students already enrolled)");
 		}
 		//check instructor exist
 		Instructor ins = instructorMapper.toEntity(instructorService.getInstructor(courseRequest.instructor_id()));
 		
-		old.setName(courseRequest.name());
-		old.setCapacity(cap);
-		old.setEnrolledCount(courseRequest.enrolled_count());
-		old.setInstructor(ins);
+		old.get().setName(courseRequest.name());
+		old.get().setCapacity(cap);
+		old.get().setEnrolledCount(courseRequest.enrolled_count());
+		old.get().setInstructor(ins);
 		
-		Course saved = courseRepo.save(old);
+		Course saved = courseRepo.save(old.get());
 		
 		return courseMapper.toResponse(saved);
 	}
 	
-	public void deleteCourse(UUID id) {
-		Course c = courseRepo.findById(id).orElseThrow(() -> new RuntimeException("Course with id:"+id+" not found to delete"));
-		
-		// if there are students enrolled  cancel all enrollments  or prevent deleting course	
-		if(c.getEnrolledCount() > 0) {
-			throw new IllegalArgumentException("cannot delete this course because there are students enrolled");
+	public void deleteCourse(Long id) {
+		Optional<Course> c = courseRepo.findById(id);
+		if(!c.isPresent()) {
+			throw new RecordNotFoundException("Course with id:"+id+" Not Found");
 		}
 		
-		courseRepo.delete(c);
+		// if there are students enrolled  cancel all enrollments  or prevent deleting course	
+		if(c.get().getEnrolledCount() > 0) {
+			throw new IllegalArgumentException("cannot delete course with id:"+id+" because there are students enrolled");
+		}
+		
+		courseRepo.delete(c.get());
 	}
 	//------------------------------------CRUD
 }

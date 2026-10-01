@@ -1,12 +1,11 @@
 package com.course.management.entity;
 
 import java.util.List;
-import java.util.UUID;
-
-import org.hibernate.annotations.UuidGenerator;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -15,11 +14,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
-public class Course {
+public class Course extends BaseEntity{
 
-	@Id
-	@UuidGenerator
-	private UUID id;
+
 	@NotBlank
 	private String name;
 	@NotNull
@@ -33,9 +30,8 @@ public class Course {
 	
 	
 	public Course() {super();}
-	public Course(UUID id, String name, Integer capacity, Integer enrolledCount, Instructor instructor) {
-		super();
-		this.id = id;
+	public Course(Long id, String name, Integer capacity, Integer enrolledCount, Instructor instructor) {
+		super(id);
 		this.name = name;
 		this.capacity = capacity;
 		this.enrolledCount = enrolledCount;
@@ -44,12 +40,6 @@ public class Course {
 
 
 
-	public UUID getId() {
-		return id;
-	}
-	public void setId(UUID id) {
-		this.id = id;
-	}
 	public String getName() {
 		return name;
 	}

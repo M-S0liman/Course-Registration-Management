@@ -1,9 +1,6 @@
 package com.course.management.entity;
 
 import java.util.List;
-import java.util.UUID;
-
-import org.hibernate.annotations.UuidGenerator;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -15,11 +12,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 @Entity
-public class Student {
+public class Student extends BaseEntity {
 
-	@Id
-	@UuidGenerator
-	private UUID id;
 	@NotBlank
 	private String name;
 	@Email
@@ -30,20 +24,14 @@ public class Student {
 	
 	
 	public Student() {super();}
-	public Student(UUID id, String name, @Email String email, String phoneNum) {
-		super();
-		this.id = id;
+	public Student(Long id, String name, @Email String email, String phoneNum) {
+		super(id);
 		this.name = name;
 		this.email = email;
 		this.phoneNum = phoneNum;
 	}
 
-	public UUID getId() {
-		return id;
-	}
-	public void setId(UUID id) {
-		this.id = id;
-	}
+	
 	public String getName() {
 		return name;
 	}
