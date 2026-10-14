@@ -1,12 +1,10 @@
 package com.course.management.mapper;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.course.management.dto.request.EnrollmentRequest;
 import com.course.management.dto.response.EnrollmentResponse;
 import com.course.management.entity.Enrollment;
-import com.course.management.service.StudentService;
 
 @Component
 public class EnrollmentMapper {

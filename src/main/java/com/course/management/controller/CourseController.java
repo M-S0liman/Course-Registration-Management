@@ -2,7 +2,6 @@ package com.course.management.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,15 +18,15 @@ import com.course.management.dto.response.CourseResponse;
 import com.course.management.service.CourseService;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 
 @RestController
-@RequestMapping("/courses")
+@RequiredArgsConstructor
+@RequestMapping("/api/v1/courses")
 public class CourseController {
 
-	@Autowired
-	private CourseService courseService;
-	
+	private final CourseService courseService;
 	
 	@GetMapping("/course-id/{id}")
 	public ResponseEntity<CourseResponse> getCourse(@PathVariable Long id){

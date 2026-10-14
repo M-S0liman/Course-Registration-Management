@@ -4,22 +4,20 @@ import java.util.List;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
+@NoArgsConstructor
+@Getter
+@Setter
 public class Course extends BaseEntity{
 
-
-	@NotBlank
 	private String name;
-	@NotNull
 	private Integer capacity;
 	private Integer enrolledCount=0;
 	@ManyToOne
@@ -29,40 +27,12 @@ public class Course extends BaseEntity{
 	private List<Enrollment>enrollments;
 	
 	
-	public Course() {super();}
 	public Course(Long id, String name, Integer capacity, Integer enrolledCount, Instructor instructor) {
 		super(id);
 		this.name = name;
 		this.capacity = capacity;
 		this.enrolledCount = enrolledCount;
 		this.instructor = instructor;
-	}
-
-
-
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
-	public Instructor getInstructor() {
-		return instructor;
-	}
-	public void setInstructor(Instructor instructor) {
-		this.instructor = instructor;
-	}
-	public Integer getCapacity() {
-		return capacity;
-	}
-	public void setCapacity(Integer capacity) {
-		this.capacity = capacity;
-	}
-	public Integer getEnrolledCount() {
-		return enrolledCount;
-	}
-	public void setEnrolledCount(Integer enrolledCount) {
-		this.enrolledCount = enrolledCount;
 	}
 	
 }

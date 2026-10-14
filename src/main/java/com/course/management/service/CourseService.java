@@ -3,7 +3,6 @@ package com.course.management.service;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,18 +15,18 @@ import com.course.management.mapper.CourseMapper;
 import com.course.management.mapper.InstructorMapper;
 import com.course.management.repository.CourseRepo;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class CourseService {
 
-	@Autowired
-	private CourseRepo courseRepo;
-	@Autowired
-	private InstructorService instructorService;
-	@Autowired
-	private CourseMapper courseMapper;
-	@Autowired
-	private InstructorMapper instructorMapper;
+	private final CourseRepo courseRepo;
+	private final InstructorService instructorService;
+	private final CourseMapper courseMapper;
+	private final InstructorMapper instructorMapper;
 	
+
 	//CRUD ---------------------------
 	
 	@Transactional

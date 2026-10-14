@@ -2,7 +2,6 @@ package com.course.management.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,12 +17,15 @@ import com.course.management.dto.request.EnrollmentRequest;
 import com.course.management.dto.response.EnrollmentResponse;
 import com.course.management.service.EnrollmentService;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
-@RequestMapping("/enrollments")
+@RequiredArgsConstructor
+@RequestMapping("/api/v1/enrollments")
 public class EnrollmentController {
 
-	@Autowired
-	private EnrollmentService enrollmentService;
+	private final EnrollmentService enrollmentService;
+
 	
 	@GetMapping("/enrollment/{id}")
 	public ResponseEntity<EnrollmentResponse> getEnrollment(@PathVariable Long id) {
