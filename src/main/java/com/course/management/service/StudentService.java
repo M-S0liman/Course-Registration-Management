@@ -3,7 +3,6 @@ package com.course.management.service;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,16 +14,16 @@ import com.course.management.exception.RecordNotFoundException;
 import com.course.management.mapper.StudentMapper;
 import com.course.management.repository.StudentRepo;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class StudentService {
 	
-	@Autowired
-	private StudentRepo studentRepo;
-	@Autowired
-	private EnrollmentService enrollmentService;
-	@Autowired
-	private StudentMapper studentMapper;
-	
+	private final StudentRepo studentRepo;
+	private final EnrollmentService enrollmentService;
+	private final StudentMapper studentMapper;
+
 	//CRUD ---------------------------
 	public StudentResponse getStudent(Long id) {
 		Optional<Student> s = studentRepo.findById(id);

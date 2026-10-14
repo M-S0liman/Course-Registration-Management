@@ -1,6 +1,5 @@
 package com.course.management.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -11,27 +10,21 @@ import com.course.management.dto.request.StudentRequest;
 import com.course.management.dto.response.CourseResponse;
 import com.course.management.dto.response.InstructorResponse;
 import com.course.management.dto.response.StudentResponse;
-import com.course.management.entity.Course;
-import com.course.management.entity.Enrollment;
-import com.course.management.entity.EnrollmentStatus;
-import com.course.management.entity.Instructor;
-import com.course.management.entity.Student;
 import com.course.management.service.CourseService;
 import com.course.management.service.EnrollmentService;
 import com.course.management.service.InstructorService;
 import com.course.management.service.StudentService;
 
+import lombok.RequiredArgsConstructor;
+
 @Component
+@RequiredArgsConstructor
 public class StartupApp implements CommandLineRunner{
 	
-	@Autowired
-	private StudentService studentService;
-	@Autowired
-	private InstructorService instructorService;
-	@Autowired
-	private CourseService courseService;
-	@Autowired
-	private EnrollmentService enrollmentService;
+	private final StudentService studentService;
+	private final InstructorService instructorService;
+	private final CourseService courseService;
+	private final EnrollmentService enrollmentService;
 
 	@Override
 	public void run(String... args) throws Exception {

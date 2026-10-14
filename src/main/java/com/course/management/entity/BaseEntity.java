@@ -11,8 +11,14 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @MappedSuperclass
+@NoArgsConstructor
+@Getter
+@Setter
 //@EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
 
@@ -29,42 +35,9 @@ public abstract class BaseEntity {
 //	private LastModifiedDate lastModifiedDate;
 	
 	
-	public BaseEntity() {super();}
 	public BaseEntity(Long id) {
 		super();
 		this.id = id;
 	}
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
-	}
-//	public String getCreatedBy() {
-//		return createdBy;
-//	}
-//	public void setCreatedBy(String createdBy) {
-//		this.createdBy = createdBy;
-//	}
-//	public String getLastModifiedBy() {
-//		return lastModifiedBy;
-//	}
-//	public void setLastModifiedBy(String lastModifiedBy) {
-//		this.lastModifiedBy = lastModifiedBy;
-//	}
-//	public CreatedDate getCreatedDate() {
-//		return createdDate;
-//	}
-//	public void setCreatedDate(CreatedDate createdDate) {
-//		this.createdDate = createdDate;
-//	}
-//	public LastModifiedDate getLastModifiedDate() {
-//		return lastModifiedDate;
-//	}
-//	public void setLastModifiedDate(LastModifiedDate lastModifiedDate) {
-//		this.lastModifiedDate = lastModifiedDate;
-//	}
-	
-	
 	
 }

@@ -3,7 +3,6 @@ package com.course.management.service;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,19 +20,18 @@ import com.course.management.mapper.EnrollmentMapper;
 import com.course.management.repository.EnrollmentRepo;
 import com.course.management.repository.StudentRepo;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class EnrollmentService {
 	
-	@Autowired
-	private EnrollmentRepo enrollmentRepo;
-	@Autowired
-	private StudentRepo studentRepo;  //repo to avoid circular references (no need student business logic in this case)
-	@Autowired
-	private CourseService courseService;
-	@Autowired
-	private CourseMapper courseMapper;
-	@Autowired
-	private EnrollmentMapper enrollmentMapper;
+	private final EnrollmentRepo enrollmentRepo;
+	private final StudentRepo studentRepo;  //repo to avoid circular references (no need student business logic in this case)
+	private final CourseService courseService;
+	private final CourseMapper courseMapper;
+	private final EnrollmentMapper enrollmentMapper;
+	
 	
 //	Enrollment operations:
 //	Enroll student in course.
